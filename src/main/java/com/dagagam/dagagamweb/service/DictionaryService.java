@@ -2,6 +2,7 @@ package com.dagagam.dagagamweb.service;
 
 import com.dagagam.dagagamweb.constant.DictionaryState;
 import com.dagagam.dagagamweb.dto.DictRequestDto;
+import com.dagagam.dagagamweb.dto.DictionaryDto;
 import com.dagagam.dagagamweb.entity.Dictionary;
 import com.dagagam.dagagamweb.entity.Member;
 import com.dagagam.dagagamweb.repository.DictionaryRepository;
@@ -9,6 +10,8 @@ import com.dagagam.dagagamweb.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -45,5 +48,25 @@ public class DictionaryService {
         dictionary.setDictionaryState(DictionaryState.ACCESSIBLE); // 초기 상태
 
         dictionaryRepository.save(dictionary);
+    }
+
+    // 단어 검색 사전 조회
+    public List<DictionaryDto> searchDictionaries(String keyword) {
+        List<Dictionary> dictionaries = dictionaryRepository.findByWordContainingIgnoreCase(keyword);
+
+        List<DictionaryDto> dictionaryDtos = new ArrayList<>();
+        for (Dictionary dictionary : dictionaries) {
+            DictionaryDto dictionaryDto = new DictionaryDto();
+            dictionaryDto.setId(dictionary.getId());
+            dictionaryDto.setWord(dictionary.getWord());
+            dictionaryDto.setDescription(dictionary.getDescription());
+            dictionaryDto.setLikes(dictionary.getLikes());
+            dictionaryDto.setDate(dictionary.getDate());
+            dictionaryDto.setParticipantName(dictionary.getParticipant().getName());
+
+            dictionaryDtos.add(dictionaryDto);
+        }
+
+        return dictionaryDtos;
     }
 }
