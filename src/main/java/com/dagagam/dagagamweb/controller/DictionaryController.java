@@ -2,11 +2,14 @@ package com.dagagam.dagagamweb.controller;
 
 
 import com.dagagam.dagagamweb.dto.DictRequestDto;
+import com.dagagam.dagagamweb.dto.DictionaryDto;
 import com.dagagam.dagagamweb.service.DictionaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/dict")
@@ -30,5 +33,14 @@ public class DictionaryController {
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    // 단어 검색으로 사전 조회
+    @GetMapping("/search")
+    public ResponseEntity<List<DictionaryDto>> searchDictionaries(
+            @RequestParam String keyword
+    ) {
+        List<DictionaryDto> dictionaries = dictionaryService.searchDictionaries(keyword);
+        return new ResponseEntity<>(dictionaries, HttpStatus.OK);
     }
 }
