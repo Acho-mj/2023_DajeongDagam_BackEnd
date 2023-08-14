@@ -10,6 +10,7 @@ import com.dagagam.dagagamweb.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -68,5 +69,25 @@ public class DictionaryService {
         }
 
         return dictionaryDtos;
+    }
+
+
+    // 사전 삭제
+    @Transactional
+    public void deleteDictionary(Long userId, Long dictionaryId) throws Exception {
+        Optional<Member> optionalMember = memberRepository.findById(userId);
+        if (!optionalMember.isPresent()) {
+            throw new Exception("사용자를 찾을 수 없습니다.");
+        }
+
+        Member member = optionalMember.get();
+        Dictionary dictionary = dictionaryRepository.findById(dictionaryId)
+                .orElseThrow(() -> new Exception("사전을 찾을 수 없습니다."));
+
+        if (!dictionary.getParticipant().equals(member)) {
+            throw new Exception("사전을 삭제할 권한이 없습니다.");
+        }
+
+        dictionaryRepository.delete(dictionary);
     }
 }
