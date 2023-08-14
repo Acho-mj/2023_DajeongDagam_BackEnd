@@ -44,6 +44,15 @@ public class DictionaryController {
         return new ResponseEntity<>(dictionaries, HttpStatus.OK);
     }
 
+    // 사용자가 참여한 사전 조회
+    @GetMapping("/{userId}/part")
+    public ResponseEntity<List<DictionaryDto>> getParticipatedDictionaries(
+            @PathVariable Long userId
+    ) {
+        List<DictionaryDto> dictionaries = dictionaryService.getParticipatedDictionaries(userId);
+        return new ResponseEntity<>(dictionaries, HttpStatus.OK);
+    }
+
     // 사전 삭제
     @DeleteMapping("/{userId}/{dictionaryId}")
     public ResponseEntity<String> deleteDictionary(

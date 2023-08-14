@@ -71,6 +71,31 @@ public class DictionaryService {
         return dictionaryDtos;
     }
 
+    // 참여한 사전 조회
+    public List<DictionaryDto> getParticipatedDictionaries(Long userId) {
+        Optional<Member> optionalMember = memberRepository.findById(userId);
+        if (!optionalMember.isPresent()) {
+            return new ArrayList<>();
+        }
+
+        Member member = optionalMember.get();
+        List<Dictionary> dictionaries = member.getParticipatedDictionaries();
+
+        List<DictionaryDto> dictionaryDtos = new ArrayList<>();
+        for (Dictionary dictionary : dictionaries) {
+            DictionaryDto dictionaryDto = new DictionaryDto();
+            dictionaryDto.setId(dictionary.getId());
+            dictionaryDto.setWord(dictionary.getWord());
+            dictionaryDto.setDescription(dictionary.getDescription());
+            dictionaryDto.setLikes(dictionary.getLikes());
+            dictionaryDto.setDate(dictionary.getDate());
+            dictionaryDto.setParticipantName(dictionary.getParticipant().getName()); // 참여자 이름 추가
+
+            dictionaryDtos.add(dictionaryDto);
+        }
+        return dictionaryDtos;
+    }
+
 
     // 사전 삭제
     @Transactional
