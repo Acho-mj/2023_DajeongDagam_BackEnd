@@ -43,4 +43,18 @@ public class DictionaryController {
         List<DictionaryDto> dictionaries = dictionaryService.searchDictionaries(keyword);
         return new ResponseEntity<>(dictionaries, HttpStatus.OK);
     }
+
+    // 사전 삭제
+    @DeleteMapping("/{userId}/{dictionaryId}")
+    public ResponseEntity<String> deleteDictionary(
+            @PathVariable Long userId,
+            @PathVariable Long dictionaryId
+    ) {
+        try {
+            dictionaryService.deleteDictionary(userId, dictionaryId);
+            return new ResponseEntity<>("사전 삭제 완료", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
