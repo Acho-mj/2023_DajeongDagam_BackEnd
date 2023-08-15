@@ -108,7 +108,7 @@ public class DictionaryService {
 
 
     // 사전 수정
-    public DictionaryDto updateDictionary(Long dictionaryId, DictRequestDto requestDto) throws Exception {
+    public void updateDictionaryAndAddParticipant(Long dictionaryId, DictRequestDto requestDto) throws Exception {
         Optional<Dictionary> optionalDictionary = dictionaryRepository.findById(dictionaryId);
         if (!optionalDictionary.isPresent()) {
             throw new Exception("사전이 존재하지 않습니다");
@@ -118,9 +118,20 @@ public class DictionaryService {
         dictionary.setDescription(requestDto.getDescription());
         dictionary.setDate(LocalDateTime.now());
 
-        Dictionary updatedDictionary = dictionaryRepository.save(dictionary);
+        // 사용자 정보 가져오기
+        Optional<Member> optionalMember = memberRepository.findById(requestDto.getUserId());
+        if (!optionalMember.isPresent()) {
+            throw new Exception("사용자가 존재하지 않습니다.");
+        }
+        Member participant = optionalMember.get();
 
-        return convertToDto(updatedDictionary);
+        // 이미 참가자인지 확인
+        List<Member> participants = dictionary.getParticipants();
+        if (!participants.contains(participant)) {
+            participants.add(participant);
+        }
+
+        dictionaryRepository.save(dictionary);
     }
 
     private DictionaryDto convertToDto(Dictionary dictionary) {
