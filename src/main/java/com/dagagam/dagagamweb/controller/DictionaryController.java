@@ -35,6 +35,18 @@ public class DictionaryController {
         }
     }
 
+    // 사전 전체 조회
+    @GetMapping("/all")
+    public List<DictionaryDto> getAllDictionaries() {
+        return dictionaryService.getAllDictionaries();
+    }
+
+    // 사전 상세 조회
+    @GetMapping("/{dictionaryId}")
+    public DictionaryDto getDictionaryDetail(@PathVariable Long dictionaryId) {
+        return dictionaryService.getDictionaryDetail(dictionaryId);
+    }
+
     // 단어 검색으로 사전 조회
     @GetMapping("/search")
     public ResponseEntity<List<DictionaryDto>> searchDictionaries(

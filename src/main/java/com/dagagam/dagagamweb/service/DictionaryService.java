@@ -53,6 +53,29 @@ public class DictionaryService {
 
         dictionaryRepository.save(dictionary);
     }
+    
+    // 사전 전체 조회
+    public List<DictionaryDto> getAllDictionaries() {
+        List<Dictionary> dictionaries = dictionaryRepository.findAll();
+        List<DictionaryDto> dictionaryDtos = new ArrayList<>();
+
+        for (Dictionary dictionary : dictionaries) {
+            dictionaryDtos.add(convertToDto(dictionary));
+        }
+
+        return dictionaryDtos;
+    }
+    
+    // 사전 상세 조회
+    public DictionaryDto getDictionaryDetail(Long id) {
+        Dictionary dictionary = dictionaryRepository.findById(id).orElse(null);
+
+        if (dictionary != null) {
+            return convertToDto(dictionary);
+        } else {
+            return null;
+        }
+    }
 
     // 단어 검색 사전 조회
     public List<DictionaryDto> searchDictionaries(String keyword) {
