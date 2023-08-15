@@ -57,7 +57,12 @@ public class DictionaryService {
         List<DictionaryDto> dictionaryDtos = new ArrayList<>();
 
         for (Dictionary dictionary : dictionaries) {
-            dictionaryDtos.add(convertToDto(dictionary));
+            DictionaryDto dto = convertToDto(dictionary, null);
+
+            int participantsCount = dictionary.getParticipants().size();
+            dto.setParticipantsCount(participantsCount); // 참여자 수 설정
+
+            dictionaryDtos.add(dto);
         }
 
         return dictionaryDtos;
@@ -68,7 +73,12 @@ public class DictionaryService {
         Dictionary dictionary = dictionaryRepository.findById(id).orElse(null);
 
         if (dictionary != null) {
-            return convertToDto(dictionary);
+            DictionaryDto dto = convertToDto(dictionary, null);
+
+            int participantsCount = dictionary.getParticipants().size();
+            dto.setParticipantsCount(participantsCount); // 참여자 수 설정
+
+            return dto;
         } else {
             return null;
         }
@@ -80,11 +90,17 @@ public class DictionaryService {
 
         List<DictionaryDto> dictionaryDtos = new ArrayList<>();
         for (Dictionary dictionary : dictionaries) {
-            dictionaryDtos.add(convertToDto(dictionary));
+            DictionaryDto dto = convertToDto(dictionary, null);
+
+            int participantsCount = dictionary.getParticipants().size();
+            dto.setParticipantsCount(participantsCount); // 참여자 수 설정
+
+            dictionaryDtos.add(dto);
         }
 
         return dictionaryDtos;
     }
+
 
     // 참여한 사전 조회
     public List<DictionaryDto> getUserDictionaries(Long userId) {
@@ -102,6 +118,9 @@ public class DictionaryService {
                 dto.setLikes(dictionary.getLikes());
                 dto.setDate(dictionary.getDate());
                 dto.setCreatorName(dictionary.getCreator().getName());
+                int participantsCount = dictionary.getParticipants().size();
+                dto.setParticipantsCount(participantsCount); // 참여자 수 설정
+
                 result.add(dto);
             }
         }
@@ -138,7 +157,7 @@ public class DictionaryService {
         dictionaryRepository.save(dictionary);
     }
 
-    private DictionaryDto convertToDto(Dictionary dictionary) {
+    private DictionaryDto convertToDto(Dictionary dictionary, Long userId) {
         DictionaryDto dto = new DictionaryDto();
         dto.setId(dictionary.getId());
         dto.setWord(dictionary.getWord());
@@ -148,6 +167,17 @@ public class DictionaryService {
         if (dictionary.getCreator() != null) {
             dto.setCreatorName(dictionary.getCreator().getName());
         }
+
+        List<Member> participants = dictionary.getParticipants();
+        int participantsCount = participants.size();
+
+        // 본인이 참여한 경우 본인도 포함하여 참여자 수 세기
+        if (participants.stream().anyMatch(participant -> participant.getId().equals(userId))) {
+            participantsCount += 1;
+        }
+
+        dto.setParticipantsCount(participantsCount);
+
         return dto;
     }
 

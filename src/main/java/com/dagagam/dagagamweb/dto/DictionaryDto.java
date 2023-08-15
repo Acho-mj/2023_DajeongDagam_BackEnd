@@ -16,4 +16,5 @@ public class DictionaryDto {
     private int likes;
     private LocalDateTime date;
     private String creatorName; // 생성자 이름
+    private int participantsCount;  // 참여자 수
 }
