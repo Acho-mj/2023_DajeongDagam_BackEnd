@@ -12,10 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -91,23 +88,30 @@ public class DictionaryService {
 
     // 참여한 사전 조회
     public List<DictionaryDto> getUserDictionaries(Long userId) {
-        return dictionaryRepository.findUserDictionaries(userId)
-                .stream()
-                .map(dictionary -> {
-                    DictionaryDto dto = new DictionaryDto();
-                    dto.setId(dictionary.getId());
-                    dto.setWord(dictionary.getWord());
-                    dto.setDescription(dictionary.getDescription());
-                    dto.setLikes(dictionary.getLikes());
-                    dto.setDate(dictionary.getDate());
-                    dto.setCreatorName(dictionary.getCreator().getName());
-                    return dto;
-                })
-                .collect(Collectors.toList());
+        List<Dictionary> dictionaries = dictionaryRepository.findUserDictionaries(userId);
+
+        List<DictionaryDto> result = new ArrayList<>();
+        Set<Long> seenIds = new HashSet<>();
+
+        for (Dictionary dictionary : dictionaries) {
+            if (seenIds.add(dictionary.getId())) {
+                DictionaryDto dto = new DictionaryDto();
+                dto.setId(dictionary.getId());
+                dto.setWord(dictionary.getWord());
+                dto.setDescription(dictionary.getDescription());
+                dto.setLikes(dictionary.getLikes());
+                dto.setDate(dictionary.getDate());
+                dto.setCreatorName(dictionary.getCreator().getName());
+                result.add(dto);
+            }
+        }
+
+        return result;
     }
 
 
     // 사전 수정
+    @Transactional
     public void updateDictionaryAndAddParticipant(Long dictionaryId, DictRequestDto requestDto) throws Exception {
         Optional<Dictionary> optionalDictionary = dictionaryRepository.findById(dictionaryId);
         if (!optionalDictionary.isPresent()) {
