@@ -11,9 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class DictionaryService {
@@ -33,7 +36,7 @@ public class DictionaryService {
         if (!optionalMember.isPresent()) {
             throw new Exception("사용자가 존재하지 않습니다.");
         }
-        Member participant = optionalMember.get();
+        Member creator = optionalMember.get();
 
         // 중복된 단어가 있는지 확인
         if (dictionaryRepository.existsByWord(requestDto.getWord())) {
@@ -44,7 +47,7 @@ public class DictionaryService {
         Dictionary dictionary = new Dictionary();
         dictionary.setWord(requestDto.getWord());
         dictionary.setDescription(requestDto.getDescription());
-        dictionary.setParticipant(participant);
+        dictionary.setCreator(creator);
         dictionary.setLikes(0); // 초기 좋아요 수
         dictionary.setDictionaryState(DictionaryState.ACCESSIBLE); // 초기 상태
 
@@ -57,45 +60,58 @@ public class DictionaryService {
 
         List<DictionaryDto> dictionaryDtos = new ArrayList<>();
         for (Dictionary dictionary : dictionaries) {
-            DictionaryDto dictionaryDto = new DictionaryDto();
-            dictionaryDto.setId(dictionary.getId());
-            dictionaryDto.setWord(dictionary.getWord());
-            dictionaryDto.setDescription(dictionary.getDescription());
-            dictionaryDto.setLikes(dictionary.getLikes());
-            dictionaryDto.setDate(dictionary.getDate());
-            dictionaryDto.setParticipantName(dictionary.getParticipant().getName());
-
-            dictionaryDtos.add(dictionaryDto);
+            dictionaryDtos.add(convertToDto(dictionary));
         }
 
         return dictionaryDtos;
     }
 
     // 참여한 사전 조회
-    public List<DictionaryDto> getParticipatedDictionaries(Long userId) {
-        Optional<Member> optionalMember = memberRepository.findById(userId);
-        if (!optionalMember.isPresent()) {
-            return new ArrayList<>();
-        }
-
-        Member member = optionalMember.get();
-        List<Dictionary> dictionaries = member.getParticipatedDictionaries();
-
-        List<DictionaryDto> dictionaryDtos = new ArrayList<>();
-        for (Dictionary dictionary : dictionaries) {
-            DictionaryDto dictionaryDto = new DictionaryDto();
-            dictionaryDto.setId(dictionary.getId());
-            dictionaryDto.setWord(dictionary.getWord());
-            dictionaryDto.setDescription(dictionary.getDescription());
-            dictionaryDto.setLikes(dictionary.getLikes());
-            dictionaryDto.setDate(dictionary.getDate());
-            dictionaryDto.setParticipantName(dictionary.getParticipant().getName()); // 참여자 이름 추가
-
-            dictionaryDtos.add(dictionaryDto);
-        }
-        return dictionaryDtos;
+    public List<DictionaryDto> getUserDictionaries(Long userId) {
+        return dictionaryRepository.findUserDictionaries(userId)
+                .stream()
+                .map(dictionary -> {
+                    DictionaryDto dto = new DictionaryDto();
+                    dto.setId(dictionary.getId());
+                    dto.setWord(dictionary.getWord());
+                    dto.setDescription(dictionary.getDescription());
+                    dto.setLikes(dictionary.getLikes());
+                    dto.setDate(dictionary.getDate());
+                    dto.setCreatorName(dictionary.getCreator().getName());
+                    return dto;
+                })
+                .collect(Collectors.toList());
     }
 
+
+    // 사전 수정
+    public DictionaryDto updateDictionary(Long dictionaryId, DictRequestDto requestDto) throws Exception {
+        Optional<Dictionary> optionalDictionary = dictionaryRepository.findById(dictionaryId);
+        if (!optionalDictionary.isPresent()) {
+            throw new Exception("사전이 존재하지 않습니다");
+        }
+
+        Dictionary dictionary = optionalDictionary.get();
+        dictionary.setDescription(requestDto.getDescription());
+        dictionary.setDate(LocalDateTime.now());
+
+        Dictionary updatedDictionary = dictionaryRepository.save(dictionary);
+
+        return convertToDto(updatedDictionary);
+    }
+
+    private DictionaryDto convertToDto(Dictionary dictionary) {
+        DictionaryDto dto = new DictionaryDto();
+        dto.setId(dictionary.getId());
+        dto.setWord(dictionary.getWord());
+        dto.setDescription(dictionary.getDescription());
+        dto.setLikes(dictionary.getLikes());
+        dto.setDate(dictionary.getDate());
+        if (dictionary.getCreator() != null) {
+            dto.setCreatorName(dictionary.getCreator().getName());
+        }
+        return dto;
+    }
 
     // 사전 삭제
     @Transactional
@@ -109,7 +125,7 @@ public class DictionaryService {
         Dictionary dictionary = dictionaryRepository.findById(dictionaryId)
                 .orElseThrow(() -> new Exception("사전을 찾을 수 없습니다."));
 
-        if (!dictionary.getParticipant().equals(member)) {
+        if (!dictionary.getCreator().equals(member)) {
             throw new Exception("사전을 삭제할 권한이 없습니다.");
         }
 

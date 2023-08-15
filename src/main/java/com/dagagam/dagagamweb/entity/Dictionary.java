@@ -6,9 +6,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Getter
@@ -21,17 +19,26 @@ public class Dictionary {
     private String description;
 
     @ManyToOne
-    @JoinColumn(name = "participant_id")
-    private Member participant; // 참여자
+    @JoinColumn(name = "creator_id")
+    private Member creator;
 
-    @Column(name = "likes")
+    @ManyToMany
+    @JoinTable(
+            name = "dictionary_participants",
+            joinColumns = @JoinColumn(name = "dictionary_id"),
+            inverseJoinColumns = @JoinColumn(name = "participant_id")
+    )
+    private List<Member> participants = new ArrayList<>();
+
     private int likes;
     private LocalDateTime date;
+
+    @Enumerated(EnumType.STRING)
+    private DictionaryState dictionaryState;
+
     public Dictionary() {
         this.date = LocalDateTime.now();
     }
-    @Enumerated(EnumType.STRING)
-    private DictionaryState dictionaryState; // 상태(접근가능, 불가능)
 
     public void setDictionaryState(DictionaryState dictionaryState) {
         this.dictionaryState = dictionaryState;

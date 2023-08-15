@@ -49,8 +49,20 @@ public class DictionaryController {
     public ResponseEntity<List<DictionaryDto>> getParticipatedDictionaries(
             @PathVariable Long userId
     ) {
-        List<DictionaryDto> dictionaries = dictionaryService.getParticipatedDictionaries(userId);
+        List<DictionaryDto> dictionaries = dictionaryService.getUserDictionaries(userId);
         return new ResponseEntity<>(dictionaries, HttpStatus.OK);
+    }
+    
+    // 사전 수정
+    @PutMapping("/edit/{dictionaryId}")
+    public ResponseEntity<DictionaryDto> updateDictionary(@PathVariable Long dictionaryId,
+                                                          @RequestBody DictRequestDto requestDto) {
+        try {
+            DictionaryDto updatedDictionary = dictionaryService.updateDictionary(dictionaryId, requestDto);
+            return ResponseEntity.ok(updatedDictionary);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     // 사전 삭제
