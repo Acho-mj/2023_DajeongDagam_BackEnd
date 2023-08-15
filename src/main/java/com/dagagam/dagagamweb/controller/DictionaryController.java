@@ -35,6 +35,18 @@ public class DictionaryController {
         }
     }
 
+    // 사전 전체 조회
+    @GetMapping("/all")
+    public List<DictionaryDto> getAllDictionaries() {
+        return dictionaryService.getAllDictionaries();
+    }
+
+    // 사전 상세 조회
+    @GetMapping("/{dictionaryId}")
+    public DictionaryDto getDictionaryDetail(@PathVariable Long dictionaryId) {
+        return dictionaryService.getDictionaryDetail(dictionaryId);
+    }
+
     // 단어 검색으로 사전 조회
     @GetMapping("/search")
     public ResponseEntity<List<DictionaryDto>> searchDictionaries(
@@ -49,8 +61,22 @@ public class DictionaryController {
     public ResponseEntity<List<DictionaryDto>> getParticipatedDictionaries(
             @PathVariable Long userId
     ) {
-        List<DictionaryDto> dictionaries = dictionaryService.getParticipatedDictionaries(userId);
+        List<DictionaryDto> dictionaries = dictionaryService.getUserDictionaries(userId);
         return new ResponseEntity<>(dictionaries, HttpStatus.OK);
+    }
+    
+    // 사전 수정
+    @PutMapping("/edit/{dictionaryId}")
+    public ResponseEntity<String> updateDictionaryAndAddParticipant(
+            @PathVariable Long dictionaryId,
+            @RequestBody DictRequestDto requestDto) {
+        try {
+            dictionaryService.updateDictionaryAndAddParticipant(dictionaryId, requestDto);
+            return ResponseEntity.ok("사전 수정 및 참가자 추가 성공");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("사전 수정 및 참가자 추가 실패: " + e.getMessage());
+        }
     }
 
     // 사전 삭제

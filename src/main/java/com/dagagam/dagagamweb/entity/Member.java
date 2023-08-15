@@ -16,7 +16,11 @@ public class Member {
     private String name;
     private String email;
 
-    @OneToMany(mappedBy = "participant")
-    private List<Dictionary> participatedDictionaries; // 참여한 사전
+    @OneToMany(mappedBy = "creator")
+    private List<Dictionary> createdDictionaries;   // 생성한 사전
+
+    @ManyToMany(mappedBy = "participants")
+    private List<Dictionary> participatedDictionaries;  //  참여한 사전
+
 
 }
