@@ -3,7 +3,9 @@ package com.dagagam.dagagamweb.controller;
 import com.dagagam.dagagamweb.dto.MemberFormDto;
 import com.dagagam.dagagamweb.dto.MemberLoginDto;
 import com.dagagam.dagagamweb.dto.MemberPwdDto;
+import com.dagagam.dagagamweb.dto.MemberReturnIdDto;
 import com.dagagam.dagagamweb.entity.Member;
+import com.dagagam.dagagamweb.repository.MemberRepository;
 import com.dagagam.dagagamweb.service.CustomUserDetail;
 import com.dagagam.dagagamweb.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -34,9 +36,9 @@ import java.util.ArrayList;
 public class MemberController {
 
     private final MemberService memberService;
+    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
-
 
     // 가입
     @PostMapping("/register")
@@ -48,9 +50,10 @@ public class MemberController {
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<?> login(HttpServletRequest request, HttpServletResponse response,
+    public ResponseEntity<MemberReturnIdDto> login(HttpServletRequest request, HttpServletResponse response,
                                    @RequestBody MemberLoginDto memberLoginDto){
         UserDetails userDetails = memberService.loadUserByUsername(memberLoginDto.getEmail());
+        MemberReturnIdDto memberReturnIdDto = memberService.getMemberId(memberLoginDto.getEmail());
         Authentication authentication
                 = new UsernamePasswordAuthenticationToken(userDetails, memberLoginDto.getPassword(), new ArrayList<>());
         try {
@@ -71,7 +74,8 @@ public class MemberController {
         cookie.setMaxAge(30000 * 60);
         cookie.setSecure(true);
         response.addCookie(cookie);
-        return new ResponseEntity(HttpStatus.OK);
+//        return new ResponseEntity(HttpStatus.OK);
+        return new ResponseEntity<>(memberReturnIdDto, HttpStatus.OK);
     }
 
     // 회원정보
@@ -97,7 +101,7 @@ public class MemberController {
         return ResponseEntity.ok(memberReturn);
     }
 
-    @PostMapping("/info/changepw")
+    @PostMapping("/info/changepwd")
     public ResponseEntity<HttpStatus> changePwd(@AuthenticationPrincipal CustomUserDetail customUserDetail, @RequestBody MemberPwdDto memberPwdDto) {
         try {
             memberService.updatePwd(customUserDetail.getMember(), memberPwdDto);

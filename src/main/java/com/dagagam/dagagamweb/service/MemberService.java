@@ -3,6 +3,7 @@ package com.dagagam.dagagamweb.service;
 import com.dagagam.dagagamweb.constant.MemberAuthority;
 import com.dagagam.dagagamweb.dto.MemberFormDto;
 import com.dagagam.dagagamweb.dto.MemberPwdDto;
+import com.dagagam.dagagamweb.dto.MemberReturnIdDto;
 import com.dagagam.dagagamweb.entity.Member;
 import com.dagagam.dagagamweb.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -75,6 +76,15 @@ public class MemberService implements UserDetailsService {
                 .build();
 
         return memberFormDto;
+    }
+
+    public MemberReturnIdDto getMemberId(String email) {
+        Member member = memberRepository.findByEmail(email);
+        MemberReturnIdDto memberReturnIdDto = MemberReturnIdDto.builder()
+                .id(member.getId())
+                .build();
+
+        return memberReturnIdDto;
     }
 
 //    private void validateDuplicateMember(Member member) {
