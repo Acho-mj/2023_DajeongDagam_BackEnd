@@ -27,9 +27,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.util.ArrayList;
 
-//@CrossOrigin(origins = "http://localhost:5500", allowCredentials = "true")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/member")
@@ -42,7 +42,12 @@ public class MemberController {
 
     // 가입
     @PostMapping("/register")
-    public ResponseEntity<Member> register(@RequestBody MemberFormDto memberFormDto) {
+    public ResponseEntity<?> register(@RequestBody MemberFormDto memberFormDto) {
+        if (memberService.getMemberId(memberFormDto.getEmail())!=null) {
+            // Return JSON response with error message
+            String errorMessage = "이미 존재하는 이메일입니다.";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+        }
         memberFormDto.setPassword(passwordEncoder.encode(memberFormDto.getPassword()));
         Member registeredMember = memberService.registerMember(memberFormDto);
         return new ResponseEntity<>(registeredMember, HttpStatus.OK);
@@ -50,8 +55,9 @@ public class MemberController {
 
     // 로그인
     @PostMapping("/login")
-    public ResponseEntity<MemberReturnIdDto> login(HttpServletRequest request, HttpServletResponse response,
-                                   @RequestBody MemberLoginDto memberLoginDto){
+    public ResponseEntity<?> login(HttpServletRequest request, HttpServletResponse response,
+                                   @RequestBody MemberLoginDto memberLoginDto) {
+        if (memberService.getMemberId(memberLoginDto.getEmail())==null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 이메일입니다.");
         UserDetails userDetails = memberService.loadUserByUsername(memberLoginDto.getEmail());
         MemberReturnIdDto memberReturnIdDto = memberService.getMemberId(memberLoginDto.getEmail());
         Authentication authentication
@@ -77,6 +83,13 @@ public class MemberController {
 //        return new ResponseEntity(HttpStatus.OK);
         return new ResponseEntity<>(memberReturnIdDto, HttpStatus.OK);
     }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<String> handleAuthenticationException(AuthenticationException e) {
+        String errorMessage = "비밀번호를 다시 확인해주세요.";
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorMessage);
+    }
+
 
     // 회원정보
     @GetMapping("/info")

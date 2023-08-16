@@ -2,6 +2,7 @@ package com.dagagam.dagagamweb.service;
 
 import com.dagagam.dagagamweb.constant.MemberAuthority;
 import com.dagagam.dagagamweb.dto.MemberFormDto;
+import com.dagagam.dagagamweb.dto.MemberLoginDto;
 import com.dagagam.dagagamweb.dto.MemberPwdDto;
 import com.dagagam.dagagamweb.dto.MemberReturnIdDto;
 import com.dagagam.dagagamweb.entity.Member;
@@ -80,19 +81,13 @@ public class MemberService implements UserDetailsService {
 
     public MemberReturnIdDto getMemberId(String email) {
         Member member = memberRepository.findByEmail(email);
+        if (member==null) return null;
         MemberReturnIdDto memberReturnIdDto = MemberReturnIdDto.builder()
                 .id(member.getId())
                 .build();
 
         return memberReturnIdDto;
     }
-
-//    private void validateDuplicateMember(Member member) {
-//        Member findMember = memberRepository.findByEmail(member.getEmail());
-//        if (findMember != null) {
-//            throw new IllegalStateException("이미 가입된 이메일입니다.");
-//        }
-//    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
