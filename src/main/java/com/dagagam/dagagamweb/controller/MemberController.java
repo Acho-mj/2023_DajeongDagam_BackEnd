@@ -41,6 +41,7 @@ public class MemberController {
     private final AuthenticationManager authenticationManager;
 
     // 가입
+    @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody MemberFormDto memberFormDto) {
         if (memberService.getMemberId(memberFormDto.getEmail())!=null) {
@@ -54,6 +55,7 @@ public class MemberController {
     }
 
     // 로그인
+    @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping("/login")
     public ResponseEntity<?> login(HttpServletRequest request, HttpServletResponse response,
                                    @RequestBody MemberLoginDto memberLoginDto) {
@@ -92,37 +94,37 @@ public class MemberController {
 
 
     // 회원정보
-    @GetMapping("/info")
-    public ResponseEntity<MemberFormDto> getUserInfo(@AuthenticationPrincipal CustomUserDetail customUserDetail) {
-        MemberFormDto memberReturn = memberService.getMember(customUserDetail.getMember());
-
-        return ResponseEntity.status(HttpStatus.OK).body(memberReturn);
-    }
-
-    @GetMapping("/info/{no}")
-    public ResponseEntity<MemberFormDto> getUserInfo(@PathVariable("no") Long no) {
-        MemberFormDto memberReturn = memberService.getMember(no);
-
-        return ResponseEntity.status(HttpStatus.OK).body(memberReturn);
-    }
-
-    @PutMapping("/info/edit")
-    public ResponseEntity<MemberFormDto> updateUserInfo(@AuthenticationPrincipal CustomUserDetail customUserDetail, @RequestBody MemberFormDto memberFormDto) {
-        Member member = memberService.updateMember(customUserDetail.getMember(), memberFormDto);
-        MemberFormDto memberReturn = memberService.getMember(member);
-
-        return ResponseEntity.ok(memberReturn);
-    }
-
-    @PostMapping("/info/changepwd")
-    public ResponseEntity<HttpStatus> changePwd(@AuthenticationPrincipal CustomUserDetail customUserDetail, @RequestBody MemberPwdDto memberPwdDto) {
-        try {
-            memberService.updatePwd(customUserDetail.getMember(), memberPwdDto);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+//    @GetMapping("/info")
+//    public ResponseEntity<MemberFormDto> getUserInfo(@AuthenticationPrincipal CustomUserDetail customUserDetail) {
+//        MemberFormDto memberReturn = memberService.getMember(customUserDetail.getMember());
+//
+//        return ResponseEntity.status(HttpStatus.OK).body(memberReturn);
+//    }
+//
+//    @GetMapping("/info/{no}")
+//    public ResponseEntity<MemberFormDto> getUserInfo(@PathVariable("no") Long no) {
+//        MemberFormDto memberReturn = memberService.getMember(no);
+//
+//        return ResponseEntity.status(HttpStatus.OK).body(memberReturn);
+//    }
+//
+//    @PutMapping("/info/edit")
+//    public ResponseEntity<MemberFormDto> updateUserInfo(@AuthenticationPrincipal CustomUserDetail customUserDetail, @RequestBody MemberFormDto memberFormDto) {
+//        Member member = memberService.updateMember(customUserDetail.getMember(), memberFormDto);
+//        MemberFormDto memberReturn = memberService.getMember(member);
+//
+//        return ResponseEntity.ok(memberReturn);
+//    }
+//
+//    @PostMapping("/info/changepwd")
+//    public ResponseEntity<HttpStatus> changePwd(@AuthenticationPrincipal CustomUserDetail customUserDetail, @RequestBody MemberPwdDto memberPwdDto) {
+//        try {
+//            memberService.updatePwd(customUserDetail.getMember(), memberPwdDto);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//        return new ResponseEntity<>(HttpStatus.OK);
+//    }
 
 
 }

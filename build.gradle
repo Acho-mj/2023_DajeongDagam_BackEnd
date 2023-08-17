@@ -31,9 +31,14 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+	testImplementation 'org.apache.httpcomponents:httpclient'
 
 	implementation 'com.h2database:h2'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	// httpclient
+	implementation 'org.apache.httpcomponents:httpclient:4.5'
+	// gson
+	implementation 'com.google.code.gson:gson:2.8.5'
 }
 
 tasks.named('test') {
