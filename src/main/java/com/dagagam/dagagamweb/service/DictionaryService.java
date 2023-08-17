@@ -132,7 +132,7 @@ public class DictionaryService {
 
     // 사전 수정
     @Transactional
-    public void updateDictionaryAndAddParticipant(Long dictionaryId, DictRequestDto requestDto, UserDetails userDetails) throws Exception {
+    public void updateDictionary(Long dictionaryId, DictRequestDto requestDto, UserDetails userDetails) throws Exception {
         Optional<Dictionary> optionalDictionary = dictionaryRepository.findById(dictionaryId);
         if (!optionalDictionary.isPresent()) {
             throw new Exception("사전이 존재하지 않습니다");
@@ -146,13 +146,23 @@ public class DictionaryService {
         dictionary.setDescription(requestDto.getDescription());
         dictionary.setDate(LocalDateTime.now());
 
-        // 로그인한 사용자를 참가자로 추가
-        if (!dictionary.getParticipants().contains(participant)) {
-            dictionary.getParticipants().add(participant);
+        // 현재 사용자가 생성자인지 확인
+        boolean isCreator = dictionary.getCreator().getId().equals(participant.getId());
+
+        if (!isCreator) {
+            // 현재 사용자가 이미 참여자인지 확인
+            boolean isParticipant = dictionary.getParticipants().contains(participant);
+
+            // 현재 사용자가 참여자가 아닌 경우에만 추가
+            if (!isParticipant) {
+                dictionary.getParticipants().add(participant);
+                dictionary.setParticipantsCount(dictionary.getParticipantsCount() + 1); // 참여자 수 증가
+            }
         }
 
         dictionaryRepository.save(dictionary);
     }
+
 
     private DictionaryDto convertToDto(Dictionary dictionary, Long userId) {
         DictionaryDto dto = new DictionaryDto();
@@ -165,7 +175,7 @@ public class DictionaryService {
             dto.setCreatorName(dictionary.getCreator().getName());
         }
 
-        List<Member> participants = dictionary.getParticipants();
+        Set<Member> participants = dictionary.getParticipants();
         int participantsCount = participants.size();
 
         // 본인이 참여한 경우 본인도 포함하여 참여자 수 세기

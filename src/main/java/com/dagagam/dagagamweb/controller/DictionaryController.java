@@ -69,16 +69,17 @@ public class DictionaryController {
     
     // 사전 수정
     @PutMapping("/edit/{dictionaryId}")
-    public ResponseEntity<String> updateDictionaryAndAddParticipant(
+    public ResponseEntity<String> updateDictionary(
             @PathVariable Long dictionaryId,
             @RequestBody DictRequestDto requestDto,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
         try {
-            dictionaryService.updateDictionaryAndAddParticipant(dictionaryId, requestDto, userDetails);
-            return ResponseEntity.ok("사전 수정 및 참가자 추가 성공");
+            dictionaryService.updateDictionary(dictionaryId, requestDto, userDetails);
+            return ResponseEntity.ok("사전 수정 성공");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("사전 수정 및 참가자 추가 실패: " + e.getMessage());
+                    .body("사전 수정 실패: " + e.getMessage());
         }
     }
 
