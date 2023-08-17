@@ -8,6 +8,7 @@ import com.dagagam.dagagamweb.entity.Member;
 import com.dagagam.dagagamweb.repository.DictionaryRepository;
 import com.dagagam.dagagamweb.repository.MemberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -27,13 +28,10 @@ public class DictionaryService {
     }
 
     // 사전 등록
-    public void addDictionary(Long userId, DictRequestDto requestDto) throws Exception {
-        // 사용자 정보 가져오기
-        Optional<Member> optionalMember = memberRepository.findById(userId);
-        if (!optionalMember.isPresent()) {
-            throw new Exception("사용자가 존재하지 않습니다.");
-        }
-        Member creator = optionalMember.get();
+    public void addDictionary(DictRequestDto requestDto, UserDetails userDetails) throws Exception {
+        CustomUserDetail customUserDetail = (CustomUserDetail) userDetails;
+        Member creator = customUserDetail.getMember();
+
 
         // 중복된 단어가 있는지 확인
         if (dictionaryRepository.existsByWord(requestDto.getWord())) {
@@ -103,8 +101,11 @@ public class DictionaryService {
 
 
     // 참여한 사전 조회
-    public List<DictionaryDto> getUserDictionaries(Long userId) {
-        List<Dictionary> dictionaries = dictionaryRepository.findUserDictionaries(userId);
+    public List<DictionaryDto> getUserDictionaries(UserDetails userDetails) {
+        CustomUserDetail customUserDetail = (CustomUserDetail) userDetails;
+        Member participant = customUserDetail.getMember();
+
+        List<Dictionary> dictionaries = dictionaryRepository.findUserDictionaries(participant.getId());
 
         List<DictionaryDto> result = new ArrayList<>();
         Set<Long> seenIds = new HashSet<>();
@@ -131,27 +132,23 @@ public class DictionaryService {
 
     // 사전 수정
     @Transactional
-    public void updateDictionaryAndAddParticipant(Long dictionaryId, DictRequestDto requestDto) throws Exception {
+    public void updateDictionaryAndAddParticipant(Long dictionaryId, DictRequestDto requestDto, UserDetails userDetails) throws Exception {
         Optional<Dictionary> optionalDictionary = dictionaryRepository.findById(dictionaryId);
         if (!optionalDictionary.isPresent()) {
             throw new Exception("사전이 존재하지 않습니다");
         }
 
+        // 로그인한 사용자 정보 가져오기
+        CustomUserDetail customUserDetail = (CustomUserDetail) userDetails;
+        Member participant = customUserDetail.getMember();
+
         Dictionary dictionary = optionalDictionary.get();
         dictionary.setDescription(requestDto.getDescription());
         dictionary.setDate(LocalDateTime.now());
 
-        // 사용자 정보 가져오기
-        Optional<Member> optionalMember = memberRepository.findById(requestDto.getUserId());
-        if (!optionalMember.isPresent()) {
-            throw new Exception("사용자가 존재하지 않습니다.");
-        }
-        Member participant = optionalMember.get();
-
-        // 이미 참가자인지 확인
-        List<Member> participants = dictionary.getParticipants();
-        if (!participants.contains(participant)) {
-            participants.add(participant);
+        // 로그인한 사용자를 참가자로 추가
+        if (!dictionary.getParticipants().contains(participant)) {
+            dictionary.getParticipants().add(participant);
         }
 
         dictionaryRepository.save(dictionary);
@@ -183,20 +180,21 @@ public class DictionaryService {
 
     // 사전 삭제
     @Transactional
-    public void deleteDictionary(Long userId, Long dictionaryId) throws Exception {
-        Optional<Member> optionalMember = memberRepository.findById(userId);
-        if (!optionalMember.isPresent()) {
-            throw new Exception("사용자를 찾을 수 없습니다.");
-        }
+    public void deleteDictionary(Long dictionaryId, UserDetails userDetails) {
+        // 로그인한 사용자 정보 가져오기
+        CustomUserDetail customUserDetail = (CustomUserDetail) userDetails;
+        Member loggedInUser = customUserDetail.getMember();
 
-        Member member = optionalMember.get();
+        // 사전 찾기
         Dictionary dictionary = dictionaryRepository.findById(dictionaryId)
-                .orElseThrow(() -> new Exception("사전을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("사전을 찾을 수 없습니다."));
 
-        if (!dictionary.getCreator().equals(member)) {
-            throw new Exception("사전을 삭제할 권한이 없습니다.");
+        // 로그인한 사용자와 사전 소유자의 userId 비교
+        if (dictionary.getCreator().getId().equals(loggedInUser.getId())) {
+            dictionaryRepository.delete(dictionary);
+        } else {
+            throw new IllegalArgumentException("사전 삭제 권한이 없습니다.");
         }
-
-        dictionaryRepository.delete(dictionary);
     }
+
 }
