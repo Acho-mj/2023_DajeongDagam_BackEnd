@@ -28,10 +28,12 @@ public class Dictionary {
             joinColumns = @JoinColumn(name = "dictionary_id"),
             inverseJoinColumns = @JoinColumn(name = "participant_id")
     )
-    private List<Member> participants = new ArrayList<>();
+    private Set<Member> participants = new HashSet<>();
 
     private int likes;
     private LocalDateTime date;
+    private int participantsCount; // 참여자 수
+
 
     @Enumerated(EnumType.STRING)
     private DictionaryState dictionaryState;
@@ -46,5 +48,15 @@ public class Dictionary {
 
     public DictionaryState getDictionaryState() {
         return dictionaryState;
+    }
+
+    // setParticipantsCount 메서드 추가
+    public void setParticipantsCount(int participantsCount) {
+        this.participantsCount = participantsCount;
+    }
+
+    // setParticipants 메서드 추가
+    public void setParticipants(Set<Member> participants) {
+        this.participants = participants;
     }
 }

@@ -7,6 +7,8 @@ import com.dagagam.dagagamweb.service.DictionaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,13 +24,13 @@ public class DictionaryController {
     }
 
     // 사전 등록
-    @PostMapping("/{userId}/new")
+    @PostMapping("/new")
     public ResponseEntity<String> addDictionary(
-            @PathVariable Long userId,
-            @RequestBody DictRequestDto requestDto
+            @RequestBody DictRequestDto requestDto,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
-            dictionaryService.addDictionary(userId, requestDto);
+            dictionaryService.addDictionary(requestDto, userDetails);
             return new ResponseEntity<>("사전 등록 완료", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -57,37 +59,41 @@ public class DictionaryController {
     }
 
     // 사용자가 참여한 사전 조회
-    @GetMapping("/{userId}/part")
+    @GetMapping("/part")
     public ResponseEntity<List<DictionaryDto>> getParticipatedDictionaries(
-            @PathVariable Long userId
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        List<DictionaryDto> dictionaries = dictionaryService.getUserDictionaries(userId);
+        List<DictionaryDto> dictionaries = dictionaryService.getUserDictionaries(userDetails);
         return new ResponseEntity<>(dictionaries, HttpStatus.OK);
     }
     
     // 사전 수정
     @PutMapping("/edit/{dictionaryId}")
-    public ResponseEntity<String> updateDictionaryAndAddParticipant(
+    public ResponseEntity<String> updateDictionary(
             @PathVariable Long dictionaryId,
-            @RequestBody DictRequestDto requestDto) {
+            @RequestBody DictRequestDto requestDto,
+            @AuthenticationPrincipal UserDetails userDetails
+    ) {
         try {
-            dictionaryService.updateDictionaryAndAddParticipant(dictionaryId, requestDto);
-            return ResponseEntity.ok("사전 수정 및 참가자 추가 성공");
+            dictionaryService.updateDictionary(dictionaryId, requestDto, userDetails);
+            return ResponseEntity.ok("사전 수정 성공");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("사전 수정 및 참가자 추가 실패: " + e.getMessage());
+                    .body("사전 수정 실패: " + e.getMessage());
         }
     }
 
     // 사전 삭제
-    @DeleteMapping("/{userId}/{dictionaryId}")
+    @DeleteMapping("/{dictionaryId}")
     public ResponseEntity<String> deleteDictionary(
-            @PathVariable Long userId,
-            @PathVariable Long dictionaryId
+            @PathVariable Long dictionaryId,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
         try {
-            dictionaryService.deleteDictionary(userId, dictionaryId);
+            dictionaryService.deleteDictionary(dictionaryId, userDetails);
             return new ResponseEntity<>("사전 삭제 완료", HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
