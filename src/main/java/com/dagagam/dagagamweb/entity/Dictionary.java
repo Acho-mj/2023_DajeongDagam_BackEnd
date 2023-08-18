@@ -1,6 +1,7 @@
 package com.dagagam.dagagamweb.entity;
 
 import com.dagagam.dagagamweb.constant.DictionaryState;
+import com.dagagam.dagagamweb.dto.DictRequestDto;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,6 +43,15 @@ public class Dictionary {
         this.date = LocalDateTime.now();
     }
 
+    public Dictionary(DictRequestDto dictRequestDto, Member member) {
+        this.word = dictRequestDto.getWord();
+        this.description = dictRequestDto.getDescription();
+        this.creator = member;
+        this.likes = 0;
+        this.dictionaryState = DictionaryState.ACCESSIBLE;
+        this.date = LocalDateTime.now();
+    }
+
     public void setDictionaryState(DictionaryState dictionaryState) {
         this.dictionaryState = dictionaryState;
     }
@@ -59,4 +69,5 @@ public class Dictionary {
     public void setParticipants(Set<Member> participants) {
         this.participants = participants;
     }
+
 }

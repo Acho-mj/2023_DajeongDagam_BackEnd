@@ -36,7 +36,6 @@ public class MemberService implements UserDetailsService {
                 .password(memberFormDto.getPassword())
                 .memberAuthority(MemberAuthority.ROLE_USER)
                 .build();
-        MemberFormDto memberDto = new MemberFormDto(member);
 
         return memberRepository.save(member);
     }
@@ -95,7 +94,7 @@ public class MemberService implements UserDetailsService {
         Member member = memberRepository.findByEmail(email);
 
         if(member==null) {
-            throw new UsernameNotFoundException(email);
+            throw new UsernameNotFoundException("UsernameNotFountException");
         }
 
         return new CustomUserDetail(member);

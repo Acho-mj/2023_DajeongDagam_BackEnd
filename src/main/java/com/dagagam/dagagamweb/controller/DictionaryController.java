@@ -3,6 +3,8 @@ package com.dagagam.dagagamweb.controller;
 
 import com.dagagam.dagagamweb.dto.DictRequestDto;
 import com.dagagam.dagagamweb.dto.DictionaryDto;
+import com.dagagam.dagagamweb.entity.Member;
+import com.dagagam.dagagamweb.service.CustomUserDetail;
 import com.dagagam.dagagamweb.service.DictionaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,12 +27,14 @@ public class DictionaryController {
 
     // 사전 등록
     @PostMapping("/new")
-    public ResponseEntity<String> addDictionary(
+    public ResponseEntity<?> addDictionary(
             @RequestBody DictRequestDto requestDto,
-            @AuthenticationPrincipal UserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetail userDetails
     ) {
+        Member member = userDetails.getMember();
+        requestDto.setUserId(member.getId());
         try {
-            dictionaryService.addDictionary(requestDto, userDetails);
+            dictionaryService.addDictionary(requestDto, member);
             return new ResponseEntity<>("사전 등록 완료", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
