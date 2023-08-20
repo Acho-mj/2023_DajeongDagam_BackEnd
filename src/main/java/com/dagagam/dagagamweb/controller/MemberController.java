@@ -2,11 +2,8 @@ package com.dagagam.dagagamweb.controller;
 
 import com.dagagam.dagagamweb.dto.MemberFormDto;
 import com.dagagam.dagagamweb.dto.MemberLoginDto;
-import com.dagagam.dagagamweb.dto.MemberPwdDto;
 import com.dagagam.dagagamweb.dto.MemberReturnIdDto;
 import com.dagagam.dagagamweb.entity.Member;
-import com.dagagam.dagagamweb.repository.MemberRepository;
-import com.dagagam.dagagamweb.service.CustomUserDetail;
 import com.dagagam.dagagamweb.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,7 +13,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,21 +23,19 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 import java.util.ArrayList;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:8080")
 @RequiredArgsConstructor
 @RequestMapping("/api/member")
 public class MemberController {
 
     private final MemberService memberService;
-    private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
     // 가입
-    @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody MemberFormDto memberFormDto) {
         if (memberService.getMemberId(memberFormDto.getEmail())!=null) {
@@ -55,7 +49,6 @@ public class MemberController {
     }
 
     // 로그인
-    @CrossOrigin(origins = "http://localhost:8080")
     @PostMapping("/login")
     public ResponseEntity<?> login(HttpServletRequest request, HttpServletResponse response,
                                    @RequestBody MemberLoginDto memberLoginDto) {
@@ -80,7 +73,7 @@ public class MemberController {
         cookie.setPath("/");
 //        cookie.setHttpOnly(true);
         cookie.setMaxAge(30000 * 60);
-        cookie.setSecure(true);
+//        cookie.setSecure(true);
         response.addCookie(cookie);
 //        return new ResponseEntity(HttpStatus.OK);
         return new ResponseEntity<>(memberReturnIdDto, HttpStatus.OK);

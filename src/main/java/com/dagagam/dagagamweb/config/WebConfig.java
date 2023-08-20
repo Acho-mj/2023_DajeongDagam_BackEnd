@@ -1,7 +1,6 @@
 package com.dagagam.dagagamweb.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -11,8 +10,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(final CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedMethods(ALLOWED_METHOD_NAMES.split(", "))
-                .exposedHeaders(HttpHeaders.LOCATION);
+        registry.addMapping("/**")
+                .allowCredentials(true)
+                .allowedHeaders("*")
+                .exposedHeaders("Set-Cookie")
+                .allowedMethods(ALLOWED_METHOD_NAMES.split(", "));
     }
 }

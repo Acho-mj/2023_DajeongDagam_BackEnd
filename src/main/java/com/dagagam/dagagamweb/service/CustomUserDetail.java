@@ -1,12 +1,14 @@
 package com.dagagam.dagagamweb.service;
 
 import com.dagagam.dagagamweb.entity.Member;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+@Getter
 public class CustomUserDetail implements UserDetails {
 
     private Member member;
@@ -16,6 +18,8 @@ public class CustomUserDetail implements UserDetails {
     }
 
     public Long getUserId() {return member.getId();}
+
+    public Member getMember() {return member;}
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -38,10 +42,6 @@ public class CustomUserDetail implements UserDetails {
     @Override
     public String getUsername() {
         return member.getEmail();
-    }
-
-    public Member getMember() {
-        return member;
     }
 
     @Override

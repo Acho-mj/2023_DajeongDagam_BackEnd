@@ -28,10 +28,7 @@ public class DictionaryService {
     }
 
     // 사전 등록
-    public void addDictionary(DictRequestDto requestDto, UserDetails userDetails) throws Exception {
-        CustomUserDetail customUserDetail = (CustomUserDetail) userDetails;
-        Member creator = customUserDetail.getMember();
-
+    public void addDictionary(DictRequestDto requestDto, Member member) throws Exception {
 
         // 중복된 단어가 있는지 확인
         if (dictionaryRepository.existsByWord(requestDto.getWord())) {
@@ -39,12 +36,8 @@ public class DictionaryService {
         }
 
         // Dictionary 객체 생성 및 저장
-        Dictionary dictionary = new Dictionary();
-        dictionary.setWord(requestDto.getWord());
-        dictionary.setDescription(requestDto.getDescription());
-        dictionary.setCreator(creator);
-        dictionary.setLikes(0); // 초기 좋아요 수
-        dictionary.setDictionaryState(DictionaryState.ACCESSIBLE); // 초기 상태
+        Dictionary dictionary = new Dictionary(requestDto, member);
+
 
         dictionaryRepository.save(dictionary);
     }

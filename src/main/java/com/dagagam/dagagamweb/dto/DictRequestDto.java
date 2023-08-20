@@ -8,7 +8,6 @@ import lombok.Setter;
 public class DictRequestDto {
     private String word;
     private String description;
-    private Long categoryId;
     private Long userId;
 }
 
